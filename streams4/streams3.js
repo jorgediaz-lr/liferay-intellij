@@ -93,10 +93,10 @@ function getModuleExcludeFolders(folder, moduleIncludeFolders) {
 	};
 };
 
-function getModuleFolders(portalSourceFolder, moduleSourceFolder) {
+function getModuleFolders(portalSourceFolder, moduleSourceFolder, config) {
 	var moduleRootPath = path.relative(portalSourceFolder, moduleSourceFolder);
 	var findResultFolders = getFolders(moduleRootPath, 5);
-	var moduleFolders = findResultFolders.filter(isModuleFolder);
+	var moduleFolders = findResultFolders.filter(isModuleFolder, config);
 	return moduleFolders;
 };
 
@@ -181,6 +181,10 @@ function getModuleVersion(folder) {
 };
 
 function isModuleFolder(folder) {
+	if (config['no-tests'] && (folder.endsWith("-test") || folder.endsWith("-test-util"))) {
+		return false;
+	}
+
 	if ((folder.indexOf('/archetype-resources') != -1) || (folder.indexOf('/gradleTest') != -1)) {
 		return false;
 	}

@@ -45,13 +45,13 @@ function getBaseFolderName(folderName) {
 	return folderName;
 };
 
-function getModuleFolders(portalSourceFolder, moduleSourceFolder) {
+function getModuleFolders(portalSourceFolder, moduleSourceFolder, config) {
 	var lsFileCachePath = getFilePath(moduleSourceFolder, 'git_ls_files_modules.txt');
 
 	if (!isFile(lsFileCachePath)) {
 		console.log('[' + new Date().toLocaleTimeString() + ']', 'Scanning', moduleSourceFolder, 'for modules');
 
-		return streams3.getModuleFolders(portalSourceFolder, moduleSourceFolder);
+		return streams3.getModuleFolders(portalSourceFolder, moduleSourceFolder, config);
 	}
 
 	console.log('[' + new Date().toLocaleTimeString() + ']', 'Scanning', moduleSourceFolder, 'ls-files cache for modules');
@@ -74,7 +74,7 @@ function getModuleFolders(portalSourceFolder, moduleSourceFolder) {
 	}
 
 	var newModuleFolders = moduleFolderList
-		.filter(highland.ncurry(3, isModuleFolder, moduleFileSet, moduleFolderSet));
+		.filter(highland.ncurry(4, isModuleFolder, moduleFileSet, moduleFolderSet, config));
 
 	if (relativeRoot != '') {
 		newModuleFolders = newModuleFolders.map(getFilePath.bind(null, relativeRoot));
@@ -158,7 +158,11 @@ function getSourceRoots(folderPath) {
 	return directoryPaths.map(getSourceRoots).reduce(flatten, []);
 };
 
-function isModuleFolder(moduleFileSet, moduleFolderSet, folder) {
+function isModuleFolder(moduleFileSet, moduleFolderSet, config, folder) {
+	if (config['no-tests'] && (folder.endsWith("-test") || folder.endsWith("-test-util"))) {
+		return false;
+	}
+
 	if ((folder.indexOf('/archetype-resources') != -1) || (folder.indexOf('/gradleTest') != -1)) {
 		return false;
 	}
@@ -273,7 +277,7 @@ function scanProject(portalSourceFolder, otherSourceFolders, config, callback) {
 				sourceRoot = modulesPath;
 			}
 
-			var newFolders = getModuleFolders(portalSourceFolder, sourceRoot);
+			var newFolders = getModuleFolders(portalSourceFolder, sourceRoot, config);
 
 			console.log('[' + new Date().toLocaleTimeString() + ']', 'Located', newFolders.length, 'modules folders in', sourceRoot);
 
@@ -288,7 +292,7 @@ function scanProject(portalSourceFolder, otherSourceFolders, config, callback) {
 	console.log('[' + new Date().toLocaleTimeString() + ']', 'Located', pluginFolders.length - oldPluginFolderCount, 'legacy plugins folders in', portalSourceFolder);
 
 	var portalSourceModulesRootPath = getFilePath(portalSourceFolder, 'modules');
-	var coreModuleFolders = getModuleFolders(portalSourceFolder, portalSourceModulesRootPath);
+	var coreModuleFolders = getModuleFolders(portalSourceFolder, portalSourceModulesRootPath, config);
 
 	console.log('[' + new Date().toLocaleTimeString() + ']', 'Located', coreModuleFolders.length, 'modules folders in', portalSourceFolder);
 
