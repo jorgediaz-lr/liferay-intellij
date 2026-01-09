@@ -137,17 +137,6 @@ copylibs() {
 	timeecho 'Missing clone of https://github.com/liferay/liferay-binaries-cache-2017'
 	timeecho 'Missing clone of https://github.com/liferay/liferay-binaries-cache-2020'
 
-	if [ -f .git ] || [ -d .git ]; then
-		timeecho 'Please clone these repositories (or create a symbolic link to the clone of these repositories) and run this script again'
-
-		echo ''
-		echo 'cd ..'
-		echo 'git clone git@github.com:liferay/liferay-binaries-cache-2017.git'
-		echo 'git clone git@github.com:liferay/liferay-binaries-cache-2020.git'
-
-		return 1
-	fi
-
 	if [ "" == "$(which mvn)" ]; then
 		timeecho 'Maven is not available in the path, dependency libraries will be missing'
 		return 1
